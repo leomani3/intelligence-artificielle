@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.Tilemaps;
 
 public class PathFinding : MonoBehaviour
@@ -42,7 +43,6 @@ public class PathFinding : MonoBehaviour
             RaycastHit2D hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.down);
             if (hit != null && hit.collider != null)
             {
-                Debug.Log("DRGFDGDF");
                 if (startPointDefined)
                 {
                     tilemap.SetTile(currentStartPoint, whiteTile);
@@ -87,13 +87,7 @@ public class PathFinding : MonoBehaviour
         //delete pour reset la tilemap
         if (Input.GetKeyDown(KeyCode.Delete))
         {
-            for (int i = 0; i < tilemap.size.x; i++)
-            {
-                for (int j = 0; j < tilemap.size.y; j++)
-                {
-                    tilemap.SetTile(new Vector3Int(i, j, 0), whiteTile);
-                }
-            }
+            wipe();
             endPointDefined = false;
             startPointDefined = false;
         }
@@ -102,7 +96,7 @@ public class PathFinding : MonoBehaviour
         {
             if(startPointDefined && endPointDefined)
             {
-                Dijsktra(currentStartPoint, currentEndPoint);
+                StartCoroutine(Dijsktra(currentStartPoint, currentEndPoint, 0.05f));
             }
             else
             {
@@ -111,32 +105,115 @@ public class PathFinding : MonoBehaviour
         }
     }
 
-    public void Dijsktra(Vector3Int startPoint, Vector3Int endPoint)
+    public IEnumerator Dijsktra(Vector3Int startPoint, Vector3Int endPoint, float frameTime)
     {
         //initialisation
-        Node currentNode = new Node(startPoint, 0, 0);
-        List<Node> explored = new List<Node>();
-        explored.Add(currentNode);
+        Node startNode = new Node(startPoint.x, startPoint.y, 0, 0);
+        Node endNode = new Node(endPoint.x, endPoint.y, 0, 0);
 
-        //construction du graph
-        List<Node> graph = new List<Node>();
+        List<Node> explored = new List<Node>();
+        List<Node> chosen = new List<Node>();
+
+        Node currentNode = startNode;
+
+        Node[,] graph = new Node[width, height];
+        for (int i = 0; i < width; i++)
+        {
+            for (int j = 0; j < height; j++)
+            {
+                if (tilemap.GetTile(new Vector3Int(i, j, 0)).name.Contains("black"))
+                {
+                    graph[i, j] = new Node(i, j, -2, 1);
+                }
+                else
+                {
+                    graph[i, j] = new Node(i, j, -1, 1);
+                }
+            }
+        }
+        graph[startPoint.x, startPoint.y] = startNode;
+
+        while (!currentNode.Equal(endNode))
+        {
+            tilemap.SetTile(new Vector3Int(startNode.x, startNode.y, 0), greenTile);
+            //on étend aux voisins
+            exploreNeighbors(currentNode, graph, explored);
+            //on tri explored dans l'ordre croissant des couts
+            explored.Sort(SortByCost);
+            //choisir le plus bas cout parmis les noeuds explorés. par défaut explored[0] grace au tri.
+            currentNode = explored[0];
+            tilemap.SetTile(new Vector3Int(explored[0].x, explored[0].y, 0), whiteTile);
+            explored.RemoveAt(0);
+            yield return new WaitForSeconds(frameTime);
+        }
+        //exploration terminée. Il faut maintenant chercher le chemin !
+        while (!currentNode.Equal(startNode))
+        {
+            tilemap.SetTile(new Vector3Int(currentNode.x, currentNode.y, 0), greenTile);
+            currentNode = currentNode.parent;
+            yield return new WaitForSeconds(frameTime);
+        }
+
+    }
+
+    public void wipe()
+    {
         for (int i = 0; i < tilemap.size.x; i++)
         {
             for (int j = 0; j < tilemap.size.y; j++)
             {
-                if (i == startPoint.x && j == startPoint.y)
-                {
-                    graph.Add(new Node(new Vector3Int(i, j, 0), 0, 0));
-                }
-                else
-                {
-                    graph.Add(new Node(new Vector3Int(i, j, 0), -1, 0));
-                }
+                tilemap.SetTile(new Vector3Int(i, j, 0), whiteTile);
+            }
+        }
+    }
+
+    static int SortByCost(Node n1, Node n2)
+    {
+        return n1.cost.CompareTo(n2.cost);
+    }
+
+    public void addNeighbor(Node currentNode, int neighborX, int neighborY, Node[,] graph, List<Node> explored)
+    {
+        if (graph[neighborX, neighborY].cost == -1 || (graph[neighborX, neighborY].cost != -2 && graph[neighborX, neighborY].cost != -1 && currentNode.cost + graph[neighborX, neighborY].distance < graph[neighborX, neighborY].cost))
+        {
+            graph[neighborX, neighborY].cost = currentNode.cost + graph[neighborX, neighborY].distance;
+            graph[neighborX, neighborY].parent = currentNode;
+            explored.Add(graph[neighborX, neighborY]);
+            //Debug.Log("current node : " + currentNode.x + " " + currentNode.y + "voisin ajouté : " + neighborX + " " + neighborY + "avec un nouveau cout de : " + graph[neighborX, neighborY].cost);
+        }
+        tilemap.SetTile(new Vector3Int(currentNode.x, currentNode.y, 0), blueTile);
+    }
+
+    public void exploreNeighbors(Node currentNode, Node[,] graph, List<Node> explored)
+    {
+        if (currentNode.x > 0)
+        {
+            addNeighbor(currentNode, currentNode.x - 1, currentNode.y, graph, explored);
+            if (currentNode.y > 0)
+            {
+                addNeighbor(currentNode, currentNode.x - 1, currentNode.y-1, graph, explored);
+                addNeighbor(currentNode, currentNode.x, currentNode.y - 1, graph, explored);
+            }
+            if (currentNode.y < height - 1)
+            {
+                addNeighbor(currentNode, currentNode.x - 1, currentNode.y + 1, graph, explored);
+                addNeighbor(currentNode, currentNode.x, currentNode.y + 1, graph, explored);
             }
         }
 
-        //on étend aux voisins
-
-        //on écrit
+        if (currentNode.x < width - 1)
+        {
+            addNeighbor(currentNode, currentNode.x + 1, currentNode.y, graph, explored);
+            if (currentNode.y > 0)
+            {
+                addNeighbor(currentNode, currentNode.x + 1, currentNode.y - 1, graph, explored);
+                addNeighbor(currentNode, currentNode.x, currentNode.y - 1, graph, explored);
+            }
+            if (currentNode.y < height - 1)
+            {
+                addNeighbor(currentNode, currentNode.x + 1, currentNode.y + 1, graph, explored);
+                addNeighbor(currentNode, currentNode.x, currentNode.y + 1, graph, explored);
+            }
+        }
     }
 }

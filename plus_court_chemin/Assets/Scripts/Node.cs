@@ -4,14 +4,23 @@ using UnityEngine;
 
 public class Node
 {
-    public Vector3Int pos;
+    public int x;
+    public int y;
     public int cost;
-    public int costMalus;
+    public int distance;
+    public Node parent;
 
-    public Node(Vector3Int p, int c, int cm)
+    public Node(int posx, int posy, int c, int d)
     {
-        pos = p;
+        x = posx;
+        y = posy;
         cost = c;
-        costMalus = cm;
+        distance = d;
+        parent = null;
+    }
+
+    public bool Equal(Node n2)
+    {
+        return (this.x == n2.x && this.y == n2.y);
     }
 }
