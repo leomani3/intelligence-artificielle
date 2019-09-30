@@ -10,6 +10,7 @@ public class Boids : MonoBehaviour
 
     [Header("Détection")]
     public float neighborsDetectionRadius;
+    public float tooNear;
 
 
 
@@ -30,11 +31,18 @@ public class Boids : MonoBehaviour
 
         if(neighbors.Count > 0)
         {
-            Vector3 dir = Align();
-            Vector3 look = dir;
+            Vector3 repulse = Repulse() * 10;
+            Vector3 cohere = Cohere();
+            Vector3 align = Align();
+            Vector3 dir = repulse + cohere + align;
 
-            float rot = Mathf.Atan2(look.y, look.x) * Mathf.Rad2Deg;
-            transform.rotation = Quaternion.Euler(0f, 0f, rot - 90);
+            Debug.DrawRay(gameObject.transform.position, repulse, Color.red);
+            Debug.DrawRay(gameObject.transform.position, cohere, Color.yellow);
+            Debug.DrawRay(gameObject.transform.position, align, Color.green);
+            //Debug.DrawRay(gameObject.transform.position, dir, Color.white);
+
+            float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg - 90;
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, Quaternion.Euler(0f, 0f, angle), 2f);
 
             Forward();
         }
@@ -59,30 +67,74 @@ public class Boids : MonoBehaviour
         }
     }
 
+    public Vector3 Cohere()
+    {
+        Vector3 res = new Vector3();
+        if (neighbors.Count > 0)
+        {
+            for (int i = 0; i < neighbors.Count; i++)
+            {
+                res += neighbors[i].transform.position;
+            }
+            res = res / neighbors.Count;
+        }
+        
+        return (res - gameObject.transform.position).normalized;
+    }
+
+    /// <summary>
+    /// Permet au boid d'esquiver les obstacles et les autres boids
+    /// </summary>
+    /// <returns></returns>
+    public Vector3 Repulse()
+    {
+        Vector3 res = new Vector3();
+        if (neighbors.Count > 0)
+        {
+            if (Vector3.Distance(gameObject.transform.position, neighbors[NearestNeighbor()].transform.position) < tooNear)
+            {
+                res = gameObject.transform.position - neighbors[0].transform.position;
+            }
+        }
+        return res.normalized;
+    }
+
     /// <summary>
     /// Permet d'aligner le boid avec ses voisins
     /// </summary>
     /// <returns>Le vecteur3 correspond à la direction moyenne des voisins</returns>
     public Vector3 Align()
     {
-        Vector3 res = Vector3.zero;
-        if (neighbors.Count > 0)
+        Vector3 res = new Vector3();
+        for (int i = 0; i < neighbors.Count; i++)
         {
-            for (int i = 0; i < neighbors.Count; i++)
+            res += neighbors[i].transform.up;
+        }
+        res = res / neighbors.Count;
+
+        return res.normalized;
+    }
+
+    public int NearestNeighbor()
+    {
+        int res = 0;
+        float distMin = 0;
+        bool isSet = false;
+        for (int i = 0; i < neighbors.Count; i++)
+        {
+            if (!isSet)
             {
-                res += neighbors[i].transform.up;
+                distMin = Vector3.Distance(transform.position, neighbors[i].transform.position);
+                res = i;
+                isSet = true;
             }
-            res = res / neighbors.Count;
-
-            return res;
+            else if(Vector3.Distance(transform.position, neighbors[i].transform.position) < distMin)
+            {
+                distMin = Vector3.Distance(transform.position, neighbors[i].transform.position);
+                res = i;
+            }
         }
-        else
-        {
-            return gameObject.transform.up;
-        }
-
-        
-        
+        return res;
     }
 
     /// <summary>
@@ -108,15 +160,25 @@ public class Boids : MonoBehaviour
     /// </summary>
     public void ManageOutOfBounds()
     {
-        //s'il dépasse par la droite ou gauche
-        if (Camera.main.WorldToScreenPoint(gameObject.transform.position).x < 0 || Camera.main.WorldToScreenPoint(gameObject.transform.position).x > Screen.width)
+        //s'il dépasse par la droite
+        if (Camera.main.WorldToScreenPoint(gameObject.transform.position).x > Screen.width)
         {
-            transform.localPosition = new Vector3(transform.position.x * (-1), transform.position.y, transform.position.z);
+            transform.position = new Vector3(transform.position.x * (-1) + 0.5f, transform.position.y, transform.position.z);
         }
-        //s'il dépasse par le haut ou le bas
-        if (Camera.main.WorldToScreenPoint(gameObject.transform.position).y < 0 || Camera.main.WorldToScreenPoint(gameObject.transform.position).y > Screen.height)
+        //s'il dépasse par la gauche
+        if (Camera.main.WorldToScreenPoint(gameObject.transform.position).x < 0)
         {
-            transform.localPosition = new Vector3(transform.position.x, transform.position.y * (-1), transform.position.z);
+            transform.position = new Vector3(transform.position.x * (-1) - 0.5f, transform.position.y, transform.position.z);
+        }
+        //s'il dépasse par le bas
+        if (Camera.main.WorldToScreenPoint(gameObject.transform.position).y < 0)
+        {
+            transform.position = new Vector3(transform.position.x, transform.position.y * (-1) - 0.5f, transform.position.z);
+        }
+        //s'il dépasse pas le haut
+        if (Camera.main.WorldToScreenPoint(gameObject.transform.position).y > Screen.height)
+        {
+            transform.position = new Vector3(transform.position.x, transform.position.y * (-1) + 0.5f, transform.position.z);
         }
     }
 }
