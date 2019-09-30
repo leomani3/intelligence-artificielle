@@ -1,10 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.Tilemaps;
 
-public class PathFinding : MonoBehaviour
+public class GameManager : MonoBehaviour
 {
     public int width;
     public int height;
@@ -15,16 +14,13 @@ public class PathFinding : MonoBehaviour
     public Tile blueTile;
     public Tilemap tilemap;
 
-    private Vector3Int currentStartPoint;
-    private Vector3Int currentEndPoint;
+    private Vector3Int startPoint;
+    private Vector3Int endPoint;
     private bool startPointDefined;
     private bool endPointDefined;
     // Start is called before the first frame update
     void Start()
     {
-        startPointDefined = false;
-        endPointDefined = false;
-
         for (int i = 0; i < width; i++)
         {
             for (int j = 0; j < height; j++)
@@ -32,93 +28,72 @@ public class PathFinding : MonoBehaviour
                 tilemap.SetTile(new Vector3Int(i, j, 0), whiteTile);
             }
         }
+
+        startPoint = new Vector3Int(0, 0, 0);
+        endPoint = new Vector3Int(width - 1, height - 1, 0);
     }
 
     // Update is called once per frame
     void Update()
     {
-        //click gauche pour le point de départ
-        if (Input.GetMouseButton(0))
-        {
-            RaycastHit2D hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.down);
-            if (hit != null && hit.collider != null)
-            {
-                if (startPointDefined)
-                {
-                    tilemap.SetTile(currentStartPoint, whiteTile);
-                }
-                Vector3Int mousePos = Vector3Int.FloorToInt(Camera.main.ScreenToWorldPoint(Input.mousePosition));
-                mousePos.z = 0;
-                tilemap.SetTile(mousePos, greenTile);
-                currentStartPoint = new Vector3Int(mousePos.x, mousePos.y, 0);
-                startPointDefined = true;
-
-            }
-        }
-        //click molette pour le point d'arrivée
-        if (Input.GetMouseButton(2))
-        {
-            RaycastHit2D hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.down);
-            if (hit != null && hit.collider != null)
-            {
-                if (endPointDefined)
-                {
-                    tilemap.SetTile(currentEndPoint, whiteTile);
-                }
-                Vector3Int mousePos = Vector3Int.FloorToInt(Camera.main.ScreenToWorldPoint(Input.mousePosition));
-                mousePos.z = 0;
-                tilemap.SetTile(mousePos, redTile);
-                currentEndPoint = new Vector3Int(mousePos.x, mousePos.y, 0);
-                endPointDefined = true;
-            }
-        }
-        //click droit pour les murs
-        if (Input.GetMouseButton(1))
-        {
-            RaycastHit2D hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.down);
-            if (hit != null && hit.collider != null)
-            {
-                Vector3Int mousePos = Vector3Int.FloorToInt(Camera.main.ScreenToWorldPoint(Input.mousePosition));
-                mousePos.z = 0;
-                tilemap.SetTile(mousePos, blackTile);
-
-            }
-        }
-        //delete pour reset la tilemap
-        if (Input.GetKeyDown(KeyCode.Delete))
-        {
-            wipe();
-            endPointDefined = false;
-            startPointDefined = false;
-        }
-
-        if (Input.GetKeyDown(KeyCode.Return))
-        {
-            if(startPointDefined && endPointDefined)
-            {
-                StartCoroutine(Dijsktra(currentStartPoint, currentEndPoint, 0.05f));
-            }
-            else
-            {
-                Debug.Log("Veuillez définir un point de départ et un point d'arrivée");
-            }
-        }
-
-        if (Input.GetKeyDown(KeyCode.Backspace))
-        {
-            if (startPointDefined && endPointDefined)
-            {
-                StartCoroutine(Astar(currentStartPoint, currentEndPoint, 0.05f));
-            }
-            else
-            {
-                Debug.Log("Veuillez définir un point de départ et un point d'arrivée");
-            }
-        }
+        StartCoroutine("game");
     }
 
-    public IEnumerator Astar(Vector3Int startPoint, Vector3Int endPoint, float frameTime)
+    public IEnumerator game()
     {
+        List<Node> chemin = AstarGame(startPoint, endPoint);
+        Debug.Log("1");
+        tilemap.SetTile(startPoint, whiteTile);
+        Debug.Log("2");
+        startPoint = new Vector3Int(chemin[0].x, chemin[0].y, 0);
+        Debug.Log("3");
+        tilemap.SetTile(startPoint, redTile);
+        Debug.Log("4");
+
+        tilemap.SetTile(endPoint, whiteTile);
+        Debug.Log("5");
+        int x=0, y=0;
+        if (endPoint.x == 0)
+        {
+            do
+            {
+                x = Random.Range(-1, 2);
+            } while (x == -1);
+        }
+        if (endPoint.x == width-1)
+        {
+            do
+            {
+                x = Random.Range(-1, 2);
+            } while (x == 1);
+        }
+
+        if (endPoint.y == 0)
+        {
+            do
+            {
+                y = Random.Range(-1, 2);
+            } while (y == -1);
+        }
+        if (endPoint.y == height - 1)
+        {
+            do
+            {
+                y = Random.Range(-1, 2);
+            } while (y == 1);
+        }
+        Debug.Log("6");
+        endPoint += new Vector3Int(x, y, 0);
+        Debug.Log("7");
+        tilemap.SetTile(endPoint, greenTile);
+        Debug.Log("8");
+        yield return new WaitForSeconds(2);
+        Debug.Log("9");
+    }
+
+    public List<Node> AstarGame(Vector3Int startPoint, Vector3Int endPoint)
+    {
+        List<Node> chemin = new List<Node>();
         //initialisation
         Node startNode = new Node(startPoint.x, startPoint.y, 0, 0);
         Node endNode = new Node(endPoint.x, endPoint.y, 0, 0);
@@ -133,7 +108,7 @@ public class PathFinding : MonoBehaviour
         {
             for (int j = 0; j < height; j++)
             {
-                if (tilemap.GetTile(new Vector3Int(i, j, 0)).name.Contains("black"))
+                if (tilemap.GetTile(new Vector3Int(i, j, 0)).name.Contains("green"))
                 {
                     graph[i, j] = new Node(i, j, -2, 1);
                 }
@@ -147,7 +122,6 @@ public class PathFinding : MonoBehaviour
 
         while (!currentNode.Equal(endNode))
         {
-            Debug.Log(currentNode.x + " " + currentNode.y);
             tilemap.SetTile(new Vector3Int(startNode.x, startNode.y, 0), greenTile);
             //on étend aux voisins
             exploreNeighbors(currentNode, graph, explored, 1, startNode, endNode);
@@ -155,80 +129,17 @@ public class PathFinding : MonoBehaviour
             explored.Sort(SortByCost);
             //choisir le plus bas cout parmis les noeuds explorés. par défaut explored[0] grace au tri.
             currentNode = explored[0];
-            Debug.Log("nouveau : "+currentNode.x + " " + currentNode.y);
             explored.RemoveAt(0);
-            yield return new WaitForSeconds(frameTime);
         }
         //exploration terminée. Il faut maintenant chercher le chemin !
         while (!currentNode.Equal(startNode))
         {
             tilemap.SetTile(new Vector3Int(currentNode.x, currentNode.y, 0), greenTile);
+            chemin.Add(currentNode);
             currentNode = currentNode.parent;
-            yield return new WaitForSeconds(frameTime);
         }
-
-    }
-
-    public IEnumerator Dijsktra(Vector3Int startPoint, Vector3Int endPoint, float frameTime)
-    {
-        //initialisation
-        Node startNode = new Node(startPoint.x, startPoint.y, 0, 0);
-        Node endNode = new Node(endPoint.x, endPoint.y, 0, 0);
-
-        List<Node> explored = new List<Node>();
-        List<Node> chosen = new List<Node>();
-
-        Node currentNode = startNode;
-
-        Node[,] graph = new Node[width, height];
-        for (int i = 0; i < width; i++)
-        {
-            for (int j = 0; j < height; j++)
-            {
-                if (tilemap.GetTile(new Vector3Int(i, j, 0)).name.Contains("black"))
-                {
-                    graph[i, j] = new Node(i, j, -2, 1);
-                }
-                else
-                {
-                    graph[i, j] = new Node(i, j, -1, 1);
-                }
-            }
-        }
-        graph[startPoint.x, startPoint.y] = startNode;
-
-        while (!currentNode.Equal(endNode))
-        {
-            tilemap.SetTile(new Vector3Int(startNode.x, startNode.y, 0), greenTile);
-            tilemap.SetTile(new Vector3Int(endNode.x, endNode.y, 0), redTile);
-            //on étend aux voisins
-            exploreNeighbors(currentNode, graph, explored, 0, startNode, endNode);
-            //on tri explored dans l'ordre croissant des couts
-            explored.Sort(SortByCost);
-            //choisir le plus bas cout parmis les noeuds explorés. par défaut explored[0] grace au tri.
-            currentNode = explored[0];
-            explored.RemoveAt(0);
-            yield return new WaitForSeconds(frameTime);
-        }
-        //exploration terminée. Il faut maintenant chercher le chemin !
-        while (!currentNode.Equal(startNode))
-        {
-            tilemap.SetTile(new Vector3Int(currentNode.x, currentNode.y, 0), greenTile);
-            currentNode = currentNode.parent;
-            yield return new WaitForSeconds(frameTime);
-        }
-
-    }
-
-    public void wipe()
-    {
-        for (int i = 0; i < tilemap.size.x; i++)
-        {
-            for (int j = 0; j < tilemap.size.y; j++)
-            {
-                tilemap.SetTile(new Vector3Int(i, j, 0), whiteTile);
-            }
-        }
+        chemin.Reverse();
+        return chemin;
     }
 
     static int SortByCost(Node n1, Node n2)
@@ -238,7 +149,7 @@ public class PathFinding : MonoBehaviour
 
     public void addNeighbor(Node currentNode, int neighborX, int neighborY, Node[,] graph, List<Node> explored, int algo, Node startNode, Node endNode)
     {
-        if(algo == 0)
+        if (algo == 0)
         {
             if (graph[neighborX, neighborY].cost == -1 || (graph[neighborX, neighborY].cost != -2 && graph[neighborX, neighborY].cost != -1 && currentNode.cost + graph[neighborX, neighborY].distance < graph[neighborX, neighborY].cost))
             {
@@ -276,7 +187,7 @@ public class PathFinding : MonoBehaviour
             addNeighbor(currentNode, currentNode.x - 1, currentNode.y, graph, explored, algo, startNode, endNode);
             if (currentNode.y > 0)
             {
-                addNeighbor(currentNode, currentNode.x - 1, currentNode.y-1, graph, explored, algo, startNode, endNode);
+                addNeighbor(currentNode, currentNode.x - 1, currentNode.y - 1, graph, explored, algo, startNode, endNode);
                 addNeighbor(currentNode, currentNode.x, currentNode.y - 1, graph, explored, algo, startNode, endNode);
             }
             if (currentNode.y < height - 1)
