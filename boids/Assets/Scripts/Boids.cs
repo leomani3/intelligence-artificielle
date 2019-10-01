@@ -11,16 +11,19 @@ public class Boids : MonoBehaviour
     [Header("Détection")]
     public float neighborsDetectionRadius;
     public float tooNear;
+    public float obstacleDetectionRadius;
 
 
 
 
     private List<GameObject> neighbors;
+    private List<GameObject> obstacles;
 
     // Start is called before the first frame update
     void Start()
     {
         neighbors = new List<GameObject>();
+        obstacles = new List<GameObject>();
     }
 
     // Update is called once per frame
@@ -28,6 +31,7 @@ public class Boids : MonoBehaviour
     {
         ManageOutOfBounds();
         FindNeihbors();
+        FindObstacles();
 
         if(neighbors.Count > 0)
         {
@@ -35,6 +39,12 @@ public class Boids : MonoBehaviour
             Vector3 cohere = Cohere();
             Vector3 align = Align();
             Vector3 dir = repulse + cohere + align;
+            if (obstacles.Count > 0)
+            {
+                Vector3 avoid = Avoid() * 100;
+                Debug.DrawRay(transform.position, avoid, Color.black);
+                dir += avoid;
+            }
 
             Debug.DrawRay(gameObject.transform.position, repulse, Color.red);
             Debug.DrawRay(gameObject.transform.position, cohere, Color.yellow);
@@ -82,6 +92,32 @@ public class Boids : MonoBehaviour
         return (res - gameObject.transform.position).normalized;
     }
 
+    public Vector3 Avoid()
+    {
+
+        Vector3 res = new Vector3();
+        if (obstacles.Count > 0)
+        {
+            if (Vector3.Distance(gameObject.transform.position, obstacles[NearestObstacle()].transform.position) < obstacleDetectionRadius)
+            {
+                res = gameObject.transform.position - obstacles[NearestObstacle()].transform.position;
+            }
+        }
+        return res.normalized;
+    }
+
+    public void FindObstacles()
+    {
+        obstacles.Clear();
+        foreach (Collider2D collider in Physics2D.OverlapCircleAll(new Vector2(transform.position.x, transform.position.y), neighborsDetectionRadius))
+        {
+            if (collider.tag == "mur")
+            {
+                obstacles.Add(collider.gameObject);
+            }
+        }
+    }
+
     /// <summary>
     /// Permet au boid d'esquiver les obstacles et les autres boids
     /// </summary>
@@ -93,7 +129,7 @@ public class Boids : MonoBehaviour
         {
             if (Vector3.Distance(gameObject.transform.position, neighbors[NearestNeighbor()].transform.position) < tooNear)
             {
-                res = gameObject.transform.position - neighbors[0].transform.position;
+                res = gameObject.transform.position - neighbors[NearestNeighbor()].transform.position;
             }
         }
         return res.normalized;
@@ -131,6 +167,28 @@ public class Boids : MonoBehaviour
             else if(Vector3.Distance(transform.position, neighbors[i].transform.position) < distMin)
             {
                 distMin = Vector3.Distance(transform.position, neighbors[i].transform.position);
+                res = i;
+            }
+        }
+        return res;
+    }
+
+    public int NearestObstacle()
+    {
+        int res = 0;
+        float distMin = 0;
+        bool isSet = false;
+        for (int i = 0; i < obstacles.Count; i++)
+        {
+            if (!isSet)
+            {
+                distMin = Vector3.Distance(transform.position, obstacles[i].transform.position);
+                res = i;
+                isSet = true;
+            }
+            else if (Vector3.Distance(transform.position, obstacles[i].transform.position) < distMin)
+            {
+                distMin = Vector3.Distance(transform.position, obstacles[i].transform.position);
                 res = i;
             }
         }
