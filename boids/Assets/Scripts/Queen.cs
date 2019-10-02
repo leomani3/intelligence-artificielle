@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Boids : MonoBehaviour
+public class Queen : MonoBehaviour
 {
     [Header("Déplacement")]
     public float speed;
@@ -18,8 +18,6 @@ public class Boids : MonoBehaviour
 
     private List<GameObject> neighbors;
     private List<GameObject> obstacles;
-    private GameObject queen = null;
-
     // Start is called before the first frame update
     void Start()
     {
@@ -35,25 +33,12 @@ public class Boids : MonoBehaviour
         FindObstacles();
 
         Vector3 dir = transform.up;
-        Vector3 repulse = new Vector3();
-        Vector3 cohere = new Vector3();
-        Vector3 align = new Vector3();
-        Vector3 followQueen = new Vector3();
 
-        if(neighbors.Count > 0)
+        if (neighbors.Count > 0)
         {
-            repulse = Repulse() * 10;
-            cohere = Cohere();
-            align = Align();
+            Vector3 repulse = Repulse() * 10;
+            dir += repulse;
         }
-        if (queen != null)
-        {
-            followQueen = FollowQueen() * 10;
-            cohere = new Vector3(0, 0, 0);
-            align = new Vector3(0, 0, 0);
-        }
-        dir += repulse + cohere + align + followQueen;
-
         if (obstacles.Count > 0)
         {
             Vector3 avoid = Avoid() * 100;
@@ -67,57 +52,16 @@ public class Boids : MonoBehaviour
         Forward();
     }
 
-    public Vector3 FollowQueen()
-    {
-        return (queen.transform.position - transform.position).normalized;
-    }
-
-    /// <summary>
-    /// retourne tous les voisins d'un boid
-    /// </summary>
     public void FindNeihbors()
     {
         neighbors.Clear();
-        foreach (Collider2D collider  in Physics2D.OverlapCircleAll(new Vector2(transform.position.x, transform.position.y), neighborsDetectionRadius))
+        foreach (Collider2D collider in Physics2D.OverlapCircleAll(new Vector2(transform.position.x, transform.position.y), neighborsDetectionRadius))
         {
-            if (collider.tag == "bird" && collider.name != gameObject.name)
+            if (collider.tag == "bird" || (collider.tag == "queen" && collider.name != gameObject.name))
             {
                 neighbors.Add(collider.gameObject);
             }
-            if (collider.tag == "queen")
-            {
-                queen = collider.gameObject;
-            }
         }
-    }
-
-    public Vector3 Cohere()
-    {
-        Vector3 res = new Vector3();
-        if (neighbors.Count > 0)
-        {
-            for (int i = 0; i < neighbors.Count; i++)
-            {
-                res += neighbors[i].transform.position;
-            }
-            res = res / neighbors.Count;
-        }
-        
-        return (res - gameObject.transform.position).normalized;
-    }
-
-    public Vector3 Avoid()
-    {
-
-        Vector3 res = new Vector3();
-        if (obstacles.Count > 0)
-        {
-            if (Vector3.Distance(gameObject.transform.position, obstacles[NearestObstacle()].transform.position) < obstacleDetectionRadius)
-            {
-                res = gameObject.transform.position - obstacles[NearestObstacle()].transform.position;
-            }
-        }
-        return res.normalized;
     }
 
     public void FindObstacles()
@@ -132,10 +76,21 @@ public class Boids : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Permet au boid d'esquiver les obstacles et les autres boids
-    /// </summary>
-    /// <returns></returns>
+    public Vector3 Avoid()
+    {
+
+        Vector3 res = new Vector3();
+        if (obstacles.Count > 0)
+        {
+            if (Vector3.Distance(gameObject.transform.position, obstacles[NearestObstacle()].transform.position) < obstacleDetectionRadius)
+            {
+                res = gameObject.transform.position - obstacles[NearestObstacle()].transform.position;
+            }
+        }
+
+        return res.normalized;
+    }
+
     public Vector3 Repulse()
     {
         Vector3 res = new Vector3();
@@ -146,22 +101,6 @@ public class Boids : MonoBehaviour
                 res = gameObject.transform.position - neighbors[NearestNeighbor()].transform.position;
             }
         }
-        return res.normalized;
-    }
-
-    /// <summary>
-    /// Permet d'aligner le boid avec ses voisins
-    /// </summary>
-    /// <returns>Le vecteur3 correspond à la direction moyenne des voisins</returns>
-    public Vector3 Align()
-    {
-        Vector3 res = new Vector3();
-        for (int i = 0; i < neighbors.Count; i++)
-        {
-            res += neighbors[i].transform.up;
-        }
-        res = res / neighbors.Count;
-
         return res.normalized;
     }
 
@@ -178,7 +117,7 @@ public class Boids : MonoBehaviour
                 res = i;
                 isSet = true;
             }
-            else if(Vector3.Distance(transform.position, neighbors[i].transform.position) < distMin)
+            else if (Vector3.Distance(transform.position, neighbors[i].transform.position) < distMin)
             {
                 distMin = Vector3.Distance(transform.position, neighbors[i].transform.position);
                 res = i;
@@ -209,10 +148,6 @@ public class Boids : MonoBehaviour
         return res;
     }
 
-    /// <summary>
-    /// Fait avancer l'oiseaux vers l'avant avec un peu d'aléatoire
-    /// </summary>
-    /// <returns>Vecteur de déplacement</returns>
     public void RandomDir()
     {
         gameObject.transform.eulerAngles += new Vector3(0, 0, Random.Range(-wanderRandom, wanderRandom));
@@ -226,9 +161,6 @@ public class Boids : MonoBehaviour
         gameObject.transform.position += transform.up * speed * Time.deltaTime;
     }
 
-    /// <summary>
-    /// gère le fait que si les boids sortent de l'écran il reviennent de l'autre côté
-    /// </summary>
     public void ManageOutOfBounds()
     {
         //s'il dépasse par la droite
