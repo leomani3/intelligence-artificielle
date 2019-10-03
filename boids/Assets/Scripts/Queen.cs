@@ -15,41 +15,76 @@ public class Queen : MonoBehaviour
 
 
 
-
     private List<GameObject> neighbors;
     private List<GameObject> obstacles;
+
+
+
+    private float currentSpeed;
+
+    private bool togglePlayerInput = false;
     // Start is called before the first frame update
     void Start()
     {
         neighbors = new List<GameObject>();
         obstacles = new List<GameObject>();
+        currentSpeed = speed;
     }
 
     // Update is called once per frame
     void Update()
     {
+
+
         ManageOutOfBounds();
         FindNeihbors();
         FindObstacles();
 
         Vector3 dir = transform.up;
-
-        if (neighbors.Count > 0)
+        if (!togglePlayerInput)
         {
-            Vector3 repulse = Repulse() * 10;
-            dir += repulse;
+            currentSpeed = speed;
+            if (neighbors.Count > 0)
+            {
+                Vector3 repulse = Repulse() * 10;
+                dir += repulse;
+            }
+            if (obstacles.Count > 0)
+            {
+                Vector3 avoid = Avoid() * 100;
+                dir += avoid;
+            }
+
+            float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg - 90;
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, Quaternion.Euler(0f, 0f, angle), 5f);
+
+            RandomDir();
+            Forward();
         }
-        if (obstacles.Count > 0)
+        else
         {
-            Vector3 avoid = Avoid() * 100;
-            dir += avoid;
+            currentSpeed = speed + 2f;
+            if (Input.GetKey(KeyCode.LeftArrow))
+            {
+                transform.Rotate(new Vector3(0, 0, 5));
+            }
+            else if (Input.GetKey(KeyCode.RightArrow))
+            {
+                transform.Rotate(new Vector3(0, 0, -5));
+            }
+
+            Forward();
         }
 
-        float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg - 90;
-        transform.rotation = Quaternion.RotateTowards(transform.rotation, Quaternion.Euler(0f, 0f, angle), 5f);
 
-        RandomDir();
-        Forward();
+
+
+    }
+
+    public void SetTogglePlayerInput(bool b)
+    {
+        Debug.Log(b);
+        togglePlayerInput = b;
     }
 
     public void FindNeihbors()
@@ -158,7 +193,7 @@ public class Queen : MonoBehaviour
     /// </summary>
     public void Forward()
     {
-        gameObject.transform.position += transform.up * speed * Time.deltaTime;
+        gameObject.transform.position += transform.up * currentSpeed * Time.deltaTime;
     }
 
     public void ManageOutOfBounds()

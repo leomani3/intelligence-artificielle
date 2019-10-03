@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &7302899425943120628
+--- !u!1 &3833288795838656137
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,38 +8,37 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 5938014184079704288}
-  - component: {fileID: 3232281786161588621}
-  - component: {fileID: 3231620432221706898}
-  - component: {fileID: 3543259004073231587}
+  - component: {fileID: 4028480578347665688}
+  - component: {fileID: 2410831548023708356}
+  - component: {fileID: -2821689188933465528}
   m_Layer: 0
-  m_Name: bird
-  m_TagString: bird
+  m_Name: Chien
+  m_TagString: mur
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &5938014184079704288
+--- !u!4 &4028480578347665688
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7302899425943120628}
+  m_GameObject: {fileID: 3833288795838656137}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -3.0847197, y: -0.6625632, z: 0}
+  m_LocalPosition: {x: -2.3147607, y: -0.8657362, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!212 &3232281786161588621
+--- !u!212 &2410831548023708356
 SpriteRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7302899425943120628}
+  m_GameObject: {fileID: 3833288795838656137}
   m_Enabled: 1
   m_CastShadows: 0
   m_ReceiveShadows: 0
@@ -71,24 +70,24 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: 2b37b04b4ef73014899aae6467978e04, type: 3}
+  m_Sprite: {fileID: 21300000, guid: ce1ba47263dfde94fbca9a2169247887, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 0.5, y: 0.5}
+  m_Size: {x: 2.25, y: 2.25}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!60 &3231620432221706898
-PolygonCollider2D:
+--- !u!61 &-2821689188933465528
+BoxCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7302899425943120628}
+  m_GameObject: {fileID: 3833288795838656137}
   m_Enabled: 1
   m_Density: 1
   m_Material: {fileID: 0}
@@ -100,33 +99,11 @@ PolygonCollider2D:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
     oldSize: {x: 0.5, y: 0.5}
-    newSize: {x: 0.5, y: 0.5}
+    newSize: {x: 2.25, y: 2.25}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Points:
-    m_Paths:
-    - - {x: -0.009387493, y: 0.24312907}
-      - {x: -0.2087748, y: -0.15809608}
-      - {x: -0.25, y: -0.25}
-      - {x: 0.25, y: -0.25}
-      - {x: 0.2225163, y: -0.2143544}
-      - {x: 0.012516737, y: 0.22251657}
---- !u!114 &3543259004073231587
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7302899425943120628}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8eeda66e4e9d67b41a6b8ebc4143a151, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  speed: 5
-  wanderRandom: 5
-  neighborsDetectionRadius: 5
-  tooNear: 1
-  obstacleDetectionRadius: 3
+  serializedVersion: 2
+  m_Size: {x: 0.75, y: 0.75}
+  m_EdgeRadius: 0

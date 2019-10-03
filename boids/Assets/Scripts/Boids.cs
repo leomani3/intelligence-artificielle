@@ -13,6 +13,17 @@ public class Boids : MonoBehaviour
     public float tooNear;
     public float obstacleDetectionRadius;
 
+    [Header("Line rendering")]
+    public Material cohereMat;
+    public Material repulseMat;
+    public Material alignMat;
+
+    public GameObject repulseRenderer;
+    public GameObject cohereRenderer;
+    public GameObject alignRenderer;
+    public GameObject followRenderer;
+    public GameObject avoidRenderer;
+
 
 
 
@@ -20,9 +31,20 @@ public class Boids : MonoBehaviour
     private List<GameObject> obstacles;
     private GameObject queen = null;
 
+    private bool drawRepulse = false;
+    private bool drawCohere = false;
+    private bool drawAlign = false;
+    private bool drawFollowQueen = false;
+    private bool drawAvoid = false;
     // Start is called before the first frame update
     void Start()
     {
+        repulseRenderer = Instantiate(repulseRenderer, transform.position, Quaternion.identity, transform);
+        cohereRenderer = Instantiate(cohereRenderer, transform.position, Quaternion.identity, transform);
+        alignRenderer = Instantiate(alignRenderer, transform.position, Quaternion.identity, transform);
+        followRenderer = Instantiate(followRenderer, transform.position, Quaternion.identity, transform);
+        avoidRenderer = Instantiate(avoidRenderer, transform.position, Quaternion.identity, transform);
+
         neighbors = new List<GameObject>();
         obstacles = new List<GameObject>();
     }
@@ -33,6 +55,7 @@ public class Boids : MonoBehaviour
         ManageOutOfBounds();
         FindNeihbors();
         FindObstacles();
+        ManageDrawInput();
 
         Vector3 dir = transform.up;
         Vector3 repulse = new Vector3();
@@ -40,24 +63,107 @@ public class Boids : MonoBehaviour
         Vector3 align = new Vector3();
         Vector3 followQueen = new Vector3();
 
-        if(neighbors.Count > 0)
+        if (neighbors.Count > 0)
         {
-            repulse = Repulse() * 10;
+            repulse = Repulse();
             cohere = Cohere();
             align = Align();
+
+
+            if (drawRepulse)
+            {
+                //Debug.DrawRay(transform.position, repulse, Color.red);
+                repulseRenderer.GetComponent<LineRenderer>().SetPosition(0, transform.position);
+                repulseRenderer.GetComponent<LineRenderer>().SetPosition(1, transform.position + repulse);
+            }
+            else
+            {
+                repulseRenderer.GetComponent<LineRenderer>().SetPosition(0, transform.position);
+                repulseRenderer.GetComponent<LineRenderer>().SetPosition(1, transform.position);
+            }
+
+            if (drawCohere)
+            {
+                //Debug.DrawRay(transform.position, cohere, Color.yellow);
+                cohereRenderer.GetComponent<LineRenderer>().SetPosition(0, transform.position);
+                cohereRenderer.GetComponent<LineRenderer>().SetPosition(1, transform.position + cohere);
+            }
+            else
+            {
+                cohereRenderer.GetComponent<LineRenderer>().SetPosition(0, transform.position);
+                cohereRenderer.GetComponent<LineRenderer>().SetPosition(1, transform.position);
+            }
+
+            if (drawAlign)
+            {
+                //Debug.DrawRay(transform.position, align, Color.green);
+                alignRenderer.GetComponent<LineRenderer>().SetPosition(0, transform.position);
+                alignRenderer.GetComponent<LineRenderer>().SetPosition(1, transform.position + align);
+            }
+            else
+            {
+                alignRenderer.GetComponent<LineRenderer>().SetPosition(0, transform.position);
+                alignRenderer.GetComponent<LineRenderer>().SetPosition(1, transform.position);
+            }
+
+        }
+        else
+        {
+            repulseRenderer.GetComponent<LineRenderer>().SetPosition(0, transform.position);
+            repulseRenderer.GetComponent<LineRenderer>().SetPosition(1, transform.position);
+            cohereRenderer.GetComponent<LineRenderer>().SetPosition(0, transform.position);
+            cohereRenderer.GetComponent<LineRenderer>().SetPosition(1, transform.position);
+            alignRenderer.GetComponent<LineRenderer>().SetPosition(0, transform.position);
+            alignRenderer.GetComponent<LineRenderer>().SetPosition(1, transform.position);
         }
         if (queen != null)
         {
-            followQueen = FollowQueen() * 10;
+            followQueen = FollowQueen();
             cohere = new Vector3(0, 0, 0);
             align = new Vector3(0, 0, 0);
+
+            if (drawFollowQueen)
+            {
+                //Debug.DrawRay(transform.position, followQueen, Color.cyan);
+                followRenderer.GetComponent<LineRenderer>().SetPosition(0, transform.position);
+                followRenderer.GetComponent<LineRenderer>().SetPosition(1, transform.position + followQueen);
+            }
+            else
+            {
+                followRenderer.GetComponent<LineRenderer>().SetPosition(0, transform.position);
+                followRenderer.GetComponent<LineRenderer>().SetPosition(1, transform.position);
+            }
+
         }
-        dir += repulse + cohere + align + followQueen;
+        else
+        {
+            followRenderer.GetComponent<LineRenderer>().SetPosition(0, transform.position);
+            followRenderer.GetComponent<LineRenderer>().SetPosition(1, transform.position);
+        }
+        dir += (repulse * 10) + cohere + align + (followQueen * 10);
 
         if (obstacles.Count > 0)
         {
-            Vector3 avoid = Avoid() * 100;
-            dir += avoid;
+            Vector3 avoid = Avoid();
+            dir += (avoid * 100);
+
+            if (drawAvoid)
+            {
+                //Debug.DrawRay(transform.position, avoid, Color.black);
+                avoidRenderer.GetComponent<LineRenderer>().SetPosition(0, transform.position);
+                avoidRenderer.GetComponent<LineRenderer>().SetPosition(1, transform.position + avoid);
+            }
+            else
+            {
+                avoidRenderer.GetComponent<LineRenderer>().SetPosition(0, transform.position);
+                avoidRenderer.GetComponent<LineRenderer>().SetPosition(1, transform.position);
+            }
+
+        }
+        else
+        {
+            avoidRenderer.GetComponent<LineRenderer>().SetPosition(0, transform.position);
+            avoidRenderer.GetComponent<LineRenderer>().SetPosition(1, transform.position);
         }
 
         float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg - 90;
@@ -65,6 +171,31 @@ public class Boids : MonoBehaviour
 
         RandomDir();
         Forward();
+    }
+
+    public void ManageDrawInput()
+    {
+        if (Input.GetKeyDown(KeyCode.Alpha1))
+        {
+            drawRepulse = !drawRepulse;
+        }
+        if (Input.GetKeyDown(KeyCode.Alpha2))
+        {
+            drawCohere = !drawCohere;
+        }
+        if (Input.GetKeyDown(KeyCode.Alpha3))
+        {
+            drawAlign = !drawAlign;
+        }
+        if (Input.GetKeyDown(KeyCode.Alpha4))
+        {
+            drawFollowQueen = !drawFollowQueen;
+        }
+        if (Input.GetKeyDown(KeyCode.Alpha5))
+        {
+            drawAvoid = !drawAvoid;
+        }
+
     }
 
     public Vector3 FollowQueen()
@@ -77,10 +208,11 @@ public class Boids : MonoBehaviour
     /// </summary>
     public void FindNeihbors()
     {
+        queen = null;
         neighbors.Clear();
         foreach (Collider2D collider  in Physics2D.OverlapCircleAll(new Vector2(transform.position.x, transform.position.y), neighborsDetectionRadius))
         {
-            if (collider.tag == "bird" && collider.name != gameObject.name)
+            if (collider.tag == "bird" && collider.gameObject.transform.position != transform.position)
             {
                 neighbors.Add(collider.gameObject);
             }
