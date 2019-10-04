@@ -41,6 +41,16 @@ public class Queen : MonoBehaviour
         FindObstacles();
 
         Vector3 dir = transform.up;
+
+        if (Input.GetKeyDown(KeyCode.Keypad0))
+        {
+            currentSpeed = speed + 2f;
+        }
+        if (Input.GetKeyUp(KeyCode.Keypad0))
+        {
+            currentSpeed = speed - 2f;
+        }
+
         if (!togglePlayerInput)
         {
             currentSpeed = speed;
@@ -63,7 +73,6 @@ public class Queen : MonoBehaviour
         }
         else
         {
-            currentSpeed = speed + 2f;
             if (Input.GetKey(KeyCode.LeftArrow))
             {
                 transform.Rotate(new Vector3(0, 0, 5));

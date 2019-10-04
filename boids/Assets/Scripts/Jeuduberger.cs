@@ -27,13 +27,17 @@ public class Jeuduberger : MonoBehaviour
 
         for (int i = 0; i < nbBoids; i++)
         {
-            spawnedBoids.Add(Instantiate(boid, new Vector3(Random.Range(0, collider.size.x / 2), Random.Range(0, collider.size.y / 2), 0), Quaternion.Euler(0, 0, Random.Range(0f, 360f))));
+            GameObject sboid = Instantiate(boid, new Vector3(Random.Range(0, collider.size.x / 2), Random.Range(0, collider.size.y / 2), 0), Quaternion.Euler(0, 0, Random.Range(0f, 360f)));
+            sboid.GetComponent<Boids>().speed = 3f;
+            spawnedBoids.Add(sboid);
         }
 
         for (int i = 0; i < nbQueen; i++)
         {
             spawnedQueen.Add(Instantiate(queen, new Vector3(Random.Range(0, collider.size.x / 2), Random.Range(0, collider.size.y / 2), 0), Quaternion.Euler(0, 0, Random.Range(0f, 360f))));
         }
+
+        spawnedQueen[0].GetComponent<Queen>().SetTogglePlayerInput(true);
     }
 
     private void Update()

@@ -1111,7 +1111,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8397e5105c198f146afae05b24bd2e60, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  nbBoids: 1000
+  nbBoids: 10
   boid: {fileID: 7302899425943120628, guid: 5497dcd7e29ae72469c157f96316cbb4, type: 3}
   nbQueen: 1
   queen: {fileID: 2519301465521566104, guid: 8e271f1ea6a3cc941b25d1e68f229e06, type: 3}

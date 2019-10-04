@@ -646,7 +646,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 5
+  orthographic size: 10
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -939,8 +939,13 @@ PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Modification:
-    m_TransformParent: {fileID: 1785957321}
+    m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: -6061649211997711474, guid: b5612c9a16ed0ec489be639c13fb7492,
+        type: 3}
+      propertyPath: m_BodyType
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 3833288795838656137, guid: b5612c9a16ed0ec489be639c13fb7492,
         type: 3}
       propertyPath: m_Name
@@ -949,12 +954,22 @@ PrefabInstance:
     - target: {fileID: 3833288795838656137, guid: b5612c9a16ed0ec489be639c13fb7492,
         type: 3}
       propertyPath: m_TagString
-      value: Untagged
+      value: zone
+      objectReference: {fileID: 0}
+    - target: {fileID: 3833288795838656137, guid: b5612c9a16ed0ec489be639c13fb7492,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -2821689188933465528, guid: b5612c9a16ed0ec489be639c13fb7492,
+        type: 3}
+      propertyPath: m_IsTrigger
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4028480578347665688, guid: b5612c9a16ed0ec489be639c13fb7492,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0.23
+      value: -0.23000002
       objectReference: {fileID: 0}
     - target: {fileID: 4028480578347665688, guid: b5612c9a16ed0ec489be639c13fb7492,
         type: 3}
@@ -989,7 +1004,7 @@ PrefabInstance:
     - target: {fileID: 4028480578347665688, guid: b5612c9a16ed0ec489be639c13fb7492,
         type: 3}
       propertyPath: m_RootOrder
-      value: 0
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 4028480578347665688, guid: b5612c9a16ed0ec489be639c13fb7492,
         type: 3}
@@ -1349,27 +1364,27 @@ PrefabInstance:
         type: 3}
       propertyPath: repulseText
       value: 
-      objectReference: {fileID: 1585624476}
+      objectReference: {fileID: 0}
     - target: {fileID: 5901210106387677428, guid: 21d431884bc6b8d47800da52ad7fb120,
         type: 3}
       propertyPath: cohereText
       value: 
-      objectReference: {fileID: 864971231}
+      objectReference: {fileID: 0}
     - target: {fileID: 5901210106387677428, guid: 21d431884bc6b8d47800da52ad7fb120,
         type: 3}
       propertyPath: alignText
       value: 
-      objectReference: {fileID: 1885517967}
+      objectReference: {fileID: 0}
     - target: {fileID: 5901210106387677428, guid: 21d431884bc6b8d47800da52ad7fb120,
         type: 3}
       propertyPath: followText
       value: 
-      objectReference: {fileID: 512784701}
+      objectReference: {fileID: 0}
     - target: {fileID: 5901210106387677428, guid: 21d431884bc6b8d47800da52ad7fb120,
         type: 3}
       propertyPath: avoidText
       value: 
-      objectReference: {fileID: 1226981259}
+      objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 0}
   m_SourcePrefab: {fileID: 100100000, guid: 21d431884bc6b8d47800da52ad7fb120, type: 3}

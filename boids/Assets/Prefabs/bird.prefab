@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 3232281786161588621}
   - component: {fileID: 3231620432221706898}
   - component: {fileID: 3543259004073231587}
+  - component: {fileID: 5040149878512316063}
   m_Layer: 0
   m_Name: bird
   m_TagString: bird
@@ -92,7 +93,7 @@ PolygonCollider2D:
   m_Enabled: 1
   m_Density: 1
   m_Material: {fileID: 0}
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: 0}
@@ -128,7 +129,7 @@ MonoBehaviour:
   speed: 5
   wanderRandom: 5
   neighborsDetectionRadius: 5
-  tooNear: 1
+  tooNear: 3
   obstacleDetectionRadius: 3
   cohereMat: {fileID: 2100000, guid: c57bc108336125e4ab4fe1a2e7fbeac7, type: 2}
   repulseMat: {fileID: 2100000, guid: acb19780b6c3e4f4697d817a9be45157, type: 2}
@@ -143,3 +144,25 @@ MonoBehaviour:
     type: 3}
   avoidRenderer: {fileID: 507459467504405240, guid: d522c6d218afc784597c21e6bf1f5fda,
     type: 3}
+  chien: {fileID: 0}
+--- !u!50 &5040149878512316063
+Rigidbody2D:
+  serializedVersion: 4
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7302899425943120628}
+  m_BodyType: 1
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 1
+  m_LinearDrag: 0
+  m_AngularDrag: 0.05
+  m_GravityScale: 1
+  m_Material: {fileID: 0}
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 0
+  m_Constraints: 0

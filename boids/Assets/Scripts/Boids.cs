@@ -30,6 +30,8 @@ public class Boids : MonoBehaviour
     private List<GameObject> neighbors;
     private List<GameObject> obstacles;
     private GameObject queen = null;
+    public GameObject chien = null;
+    private GameObject zone = null;
 
     private bool drawRepulse = false;
     private bool drawCohere = false;
@@ -62,6 +64,8 @@ public class Boids : MonoBehaviour
         Vector3 cohere = new Vector3();
         Vector3 align = new Vector3();
         Vector3 followQueen = new Vector3();
+        Vector3 avoid = new Vector3();
+        Vector3 avoidChien = new Vector3();
 
         if (neighbors.Count > 0)
         {
@@ -140,12 +144,10 @@ public class Boids : MonoBehaviour
             followRenderer.GetComponent<LineRenderer>().SetPosition(0, transform.position);
             followRenderer.GetComponent<LineRenderer>().SetPosition(1, transform.position);
         }
-        dir += (repulse * 10) + cohere + align + (followQueen * 10);
 
         if (obstacles.Count > 0)
         {
-            Vector3 avoid = Avoid();
-            dir += (avoid * 100);
+            avoid = Avoid() * 100;
 
             if (drawAvoid)
             {
@@ -165,12 +167,35 @@ public class Boids : MonoBehaviour
             avoidRenderer.GetComponent<LineRenderer>().SetPosition(0, transform.position);
             avoidRenderer.GetComponent<LineRenderer>().SetPosition(1, transform.position);
         }
+    
+        if(zone != null)
+        {
+            avoid = avoidZone() * 10;
+            Debug.DrawRay(transform.position, avoid);
+        }
+
+        if (chien != null)
+        {
+            avoidChien = AvoidChien() * 200;
+        }
+
+        dir += (repulse * 10) + cohere + align + (followQueen * 10) + avoid + avoidChien;
 
         float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg - 90;
         transform.rotation = Quaternion.RotateTowards(transform.rotation, Quaternion.Euler(0f, 0f, angle), 5f);
 
         RandomDir();
         Forward();
+    }
+
+    public Vector3 AvoidChien()
+    {
+        Vector3 res = new Vector3();
+        if (Vector3.Distance(gameObject.transform.position, chien.transform.position) < tooNear)
+        {
+            res = (gameObject.transform.position - chien.transform.position);
+        }
+        return res.normalized;
     }
 
     public void ManageDrawInput()
@@ -209,6 +234,7 @@ public class Boids : MonoBehaviour
     public void FindNeihbors()
     {
         queen = null;
+        chien = null;
         neighbors.Clear();
         foreach (Collider2D collider  in Physics2D.OverlapCircleAll(new Vector2(transform.position.x, transform.position.y), neighborsDetectionRadius))
         {
@@ -220,7 +246,21 @@ public class Boids : MonoBehaviour
             {
                 queen = collider.gameObject;
             }
+            if (collider.tag == "chien")
+            {
+                chien = collider.gameObject;
+            }
         }
+    }
+
+    public Vector3 avoidZone()
+    {
+        Vector3 res = new Vector3();
+        if (Vector3.Distance(gameObject.transform.position, zone.transform.position) < tooNear)
+        {
+            res = (gameObject.transform.position - zone.transform.position);
+        }
+        return res.normalized;
     }
 
     public Vector3 Cohere()
@@ -244,7 +284,7 @@ public class Boids : MonoBehaviour
         Vector3 res = new Vector3();
         if (obstacles.Count > 0)
         {
-            if (Vector3.Distance(gameObject.transform.position, obstacles[NearestObstacle()].transform.position) < obstacleDetectionRadius)
+            if (Vector3.Distance(gameObject.transform.position, obstacles[NearestObstacle()].transform.position) < tooNear)
             {
                 res = gameObject.transform.position - obstacles[NearestObstacle()].transform.position;
             }
@@ -255,11 +295,16 @@ public class Boids : MonoBehaviour
     public void FindObstacles()
     {
         obstacles.Clear();
+        zone = null;
         foreach (Collider2D collider in Physics2D.OverlapCircleAll(new Vector2(transform.position.x, transform.position.y), neighborsDetectionRadius))
         {
             if (collider.tag == "mur")
             {
                 obstacles.Add(collider.gameObject);
+            }
+            if (collider.tag == "zone")
+            {
+                zone = collider.gameObject;
             }
         }
     }
