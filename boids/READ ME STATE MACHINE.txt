@@ -1,0 +1,4 @@
+J'ai implémenté, dans le projet des boids rendu précédemment, un comportement se basant sur une machine à états finis. Le projet reste le même que le précédent.
+
+Sur la vidéo, on voit sur la gauche la scene avec un boid mis en valeur, et sur la droite la machine à  état fini qui se met à jour en temps réel. Les différents états sont les suivants : Wander (se balader), Follow neighbors (suit ses voisins s'il y en a), Follow Queen (Suit la reine si elle est à portée), Avoid (évite les obstacles). Les transitions se font via le code en changeant des booleéen (qui sont aussi visibles sur la gauche de la fenêtre de la machine à états finis)
+

@@ -1,0 +1,24 @@
+Rendu boids:
+
+J'ai réimplémenter "from-scratch" une simulation de boids sur unity en utilisant l'approche Vectorielle. Le déplacement de boids est la somme de plusieurs vecteurs : les trois principaux étant Cohere (Les boids vont vers le centre du groupe), Align (les boids essaient d'aller dans la même direction que leurs voisins), Repulse (les boids s'écartent les uns des autres 'ils sont trop proches). à ceux là se rajoutent Avoid (évite les obstacles) et FollowQueen (suit la "reine" si elle est à portée).
+
+Il y deux modes présentés dans les vidéos correspondantes :
+
+Simulation : Se concentre principalement sur la simulation de boids et la visualisation des différents vecteurs de direction qui influencent le comportement des boids. De base 1 Queen et 10 boids sont générés. Voici les touches utilisables :
+-Y : +1 boid
+-U : -1 boid
+-I : +10 boids
+
+-H : +1 queen
+-J : -1 queen
+
+-Enter : Contrôler une reine
+-Flèches : pour contrôler la reine lorsque le controle est activé
+
+-scroll in / out : zoomer / dézoomer
+
+Il est possible d'afficher les différents vecteurs en appuyant sur &, é, ", ' , (        (les touches numériques 1, 2, 3, 4, 5)
+
+J'ai également fait un petit jeu dans lequel le joueur joue le rôle d'un chien de berger. Sont but est de de guider les boids dans la zone verte au centre de l'écran à l'aide de sa répulsion sur les boids.
+
+il est possible de tester les deux programmes en lancant les .exe correspondants se trouvant dans le dossier Builds
